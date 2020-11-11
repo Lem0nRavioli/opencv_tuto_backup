@@ -115,13 +115,15 @@ def open_resize_image(path, size=(640, 480)):
     return cv2.resize(img, size)
 
 
-def generate_board_df(pic_path, dat_path):
+# if no dat_path is specified, generate a board df without true values
+def generate_board_df(pic_path, dat_path=None):
     # generate tiles from pic and resize them for pd.df
     tiles = np.array(generate_tiles(pic_path)).reshape((81, 3025)) / 255
-    board = np.array(extract_table(dat_path)).flatten()  # read the dat file and flatten the values to put them in df
     df = pd.DataFrame(tiles)
-    df["value"] = board
-    df['is_blank'] = (df['value'] == 0).astype(int)
+    if dat_path:
+        board = np.array(extract_table(dat_path)).flatten()  # read the dat file and flatten the values to put them in df
+        df["value"] = board
+        df['is_blank'] = (df['value'] == 0).astype(int)
     return df
 
 
