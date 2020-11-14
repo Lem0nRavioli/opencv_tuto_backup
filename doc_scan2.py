@@ -81,7 +81,6 @@ def generate_tiles(path):
     s = 55  # 62
     tiles = [img_warp[x:x + s, y:y + s] for x in range(0, img_warp.shape[0], s) for y in range(0, img_warp.shape[1], s)]
     tiles_clean = []
-    clear_pic = lambda x: 255 if x > 120 else 0
     for i in index:
         tile = tiles[i][10:50,10:45]  # crop as much white as i can
         tile = cv2.resize(tile, (28, 28))
@@ -91,17 +90,75 @@ def generate_tiles(path):
     return tiles_clean
 
 
-picname = "image112.jpg"
+def open_resize_image(path, size=(640, 480)):
+    img = cv2.imread(path)
+    return cv2.resize(img, size)
+
+
+# if no dat_path is specified, generate a board df without true values
+def generate_board_df(pic_path, dat_path=None):
+    # generate tiles from pic and resize them for pd.df
+    tiles = np.array(generate_tiles(pic_path)).reshape((81, 784))  # / 255
+    df = pd.DataFrame(tiles)
+    if dat_path:
+        board = np.array(extract_table(dat_path)).flatten()  # read the dat file and flatten the values to put them in df
+        df["value"] = board
+        df['is_blank'] = (df['value'] == 0).astype(int)
+    return df
+
+
+# return a list of tuple containing (filename.jpg, filename.dat)
+def get_file_names(folder):
+    entries = os.listdir(folder)
+    entries_dat = ([entry for entry in entries if os.path.splitext(entry)[1] == ".dat"])
+    entries_jpg = ([entry for entry in entries if os.path.splitext(entry)[1] == ".jpg"])
+    return zip(entries_jpg, entries_dat)
+
+
+# necessitate a base_df to append to it, read roughly 66% of pic submitted
+def generate_all_board_df(base_df, folder, entries, show_error=False):
+    for entry in entries:
+        pic = os.path.join(folder, entry[0])
+        dat = os.path.join(folder, entry[1])
+        try:
+            df = generate_board_df(pic, dat)
+            base_df = base_df.append(df)
+        except:
+            if show_error:
+                img = open_resize_image(pic)
+                cv2.imshow(pic, img)
+    return base_df
+
+
+# uncomment to generate ds
+# call those to generate csv file in same format as mnist dataset (28x28 images with 2 true value columns)
+'''picname = "image112.jpg"
 datname = "image112.dat"
 folder = "v2_train"
 path_pic = os.path.join(folder, picname)
 path_dat = os.path.join(folder, datname)
 size = (640, 480)
-# image = open_resize_image(path_pic, size)
 tiles = generate_tiles("v2_train/image112.jpg")
+entries = get_file_names(folder)
 
-print(np.shape(tiles))
+# making a base df
+df_train = generate_board_df(path_pic, path_dat)
+# read all board and add it to df to train a model
+df_train = generate_all_board_df(df_train, folder, entries)  # roughly 64% of it is 0 value
+# data_no_zeros = data_frame.loc[data_frame['value'] > 0]
+# data_zeros = data_frame.loc[data_frame['is_blank'] == 1]
 
-print(tiles[0][14])
-cv2.imshow("tile", np.uint8(tiles[2]))
-cv2.waitKey()
+df_test = generate_board_df(path_pic, path_dat)
+df_test = generate_all_board_df(df_test, "v2_test", get_file_names("v2_test"))
+
+
+df_train.to_csv("doku_ds/sudoku_train_28x28.csv", index=False)
+df_test.to_csv("doku_ds/sudoku_test_28x28.csv", index=False)'''
+
+
+
+# print(np.shape(tiles))
+#
+# print(tiles[0][14])
+# cv2.imshow("tile", np.uint8(tiles[2]))
+# cv2.waitKey()
