@@ -73,7 +73,7 @@ history = model.fit(
     validation_data=(X_valid, y_valid),
     batch_size=512,
     epochs=30,
-    # callbacks=[early_stopping],
+    callbacks=[early_stopping],
 )
 
 
@@ -87,8 +87,8 @@ load_model = tf.keras.models.load_model('save_model\digit_recognizer_2')
 
 import doc_scan2
 import Solver
-board = doc_scan2.generate_board_df('v2_test/image83.jpg')
+board = doc_scan2.generate_board_df('v2_test/image166.jpg') / 255
 board_raw = load_model(board.values)
-# board_clean = np.argmax(board_raw, axis=1).reshape((9, 9))
-# print(board_clean)
-# Solver.run_solver(board_clean)
+board_clean = np.argmax(board_raw, axis=1).reshape((9, 9))
+print(board_clean)
+Solver.run_solver(board_clean)
