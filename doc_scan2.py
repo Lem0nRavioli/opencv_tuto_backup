@@ -84,7 +84,7 @@ def generate_tiles(path):
     for i in index:
         tile = tiles[i][10:50,10:45]  # crop as much white as i can
         tile = cv2.resize(tile, (28, 28))
-        tile = [[255 if x > 110 else x for x in row] for row in tile]
+        # tile = [[255 if x > 110 else x for x in row] for row in tile]  # attempt to clean pic, not great results
         tiles_clean.append(tile)
 
     return tiles_clean
@@ -152,8 +152,8 @@ df_test = generate_board_df(path_pic, path_dat)
 df_test = generate_all_board_df(df_test, "v2_test", get_file_names("v2_test"))
 
 
-df_train.to_csv("doku_ds/sudoku_train_28x28.csv", index=False)
-df_test.to_csv("doku_ds/sudoku_test_28x28.csv", index=False)'''
+df_train.to_csv("doku_ds/sudoku_train_28x28_noise.csv", index=False)
+df_test.to_csv("doku_ds/sudoku_test_28x28_noise.csv", index=False)'''
 
 
 
