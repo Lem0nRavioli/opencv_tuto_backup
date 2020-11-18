@@ -7,12 +7,12 @@ from matplotlib import pyplot as plt
 
 def show_image(img):
     """Shows an image until any key is pressed"""
-    print(type(img))
-    print(img.shape)
-    cv2.imshow('image', img)  # Display the image
-    cv2.imwrite('images/gau_sudoku3.jpg', img)
-    cv2.waitKey(0)  # Wait for any key to be pressed (with the image window active)
-    cv2.destroyAllWindows()  # Close all windows
+    # print(type(img))
+    # print(img.shape)
+    # cv2.imshow('image', img)  # Display the image
+    # cv2.imwrite('images/gau_sudoku3.jpg', img)
+    # cv2.waitKey(0)  # Wait for any key to be pressed (with the image window active)
+    # cv2.destroyAllWindows()  # Close all windows
     return img
 
 
