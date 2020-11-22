@@ -39,6 +39,23 @@ def define_model():
     return model
 
 
+def define_better_model():
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Conv2D(32, (5, 5), input_shape=(28, 28, 1), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(tf.keras.layers.Conv2D(16, (3, 3), activation='relu'))
+    model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2)))
+    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    model.add(tf.keras.layers.Dense(64, activation='relu'))
+    model.add(tf.keras.layers.Dense(10, activation='softmax'))
+
+    # opt = tf.keras.optimizers.SGD(lr=0.01, momentum=0.9)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+
 # model = tf.keras.models.Sequential()
 # model.add(tf.keras.layers.Flatten(input_shape=(28, 28)))
 # model.add(tf.keras.layers.Dense(units=128, activation='relu'))
@@ -54,7 +71,11 @@ def define_model():
 # print(f"accuracy: {accuracy}, loss:{loss}")
 
 # model.save('save_model\digit_recognizer_basic_1')
-load_model = tf.keras.models.load_model('save_model\digit_recognizer_basic_1')
+
+# model = define_better_model()
+# model.fit(x_train_norm, y_train, epochs=10, batch_size=200, validation_data=(x_test_norm, y_test))
+# model.save('save_model\digreco_01')
+load_model = tf.keras.models.load_model('save_model\digreco_01')
 loss, accuracy = load_model.evaluate(x_test_norm, y_test)
 print(f"accuracy: {accuracy}, loss: {loss}")
 
@@ -67,11 +88,29 @@ def generate_board_tiles(path):
     return tiles
 
 
+def generate_board_tiles_2(path):
+    img = scanner.extract_sudoku(path)
+    img = cv2.resize(img, (900, 900))
+    s = 100
+    tiles = [img[x:x + s, y:y + s] for x in range(0, img.shape[0], s) for y in
+             range(0, img.shape[1], s)]
+    tiles_clean = []
+    for tile in tiles:
+        tile = cv2.resize(tile, (28, 28))
+        tiles_clean.append(tile)
+    print(np.array(tiles_clean).shape)
+    return tiles_clean
 
-img_path = "test_pic/test_board_1.jpg"
+
+img_path = "test_pic/sudoku_shit_angle.jpg"
+# img_path = "v2_train/image1.jpg"
 tiles = np.array(generate_board_tiles(img_path)).astype(np.float32).reshape((81, 28, 28, 1)) / 255
+test = np.array(generate_board_tiles_2(img_path)).astype(np.float32).reshape((81, 28, 28, 1)) / 255
 
 board_raw = load_model(tiles)
+board_clean = np.argmax(board_raw, axis=1).reshape((9, 9))
+print(board_clean)
+board_raw = load_model(test)
 board_clean = np.argmax(board_raw, axis=1).reshape((9, 9))
 print(board_clean)
 
@@ -79,3 +118,5 @@ print(x_test_norm.shape)
 print(x_test_norm.dtype)
 print(tiles.shape)
 print(tiles.dtype)
+print(test.shape)
+print(test.dtype)
